@@ -95,8 +95,8 @@ tokenizer = AutoTokenizer.from_pretrained(args.model)
 config = AutoConfig.from_pretrained(args.model, num_labels=3)
 model = AutoModelForSequenceClassification.from_pretrained(args.model, config=config).to(device)
 optimizer = torch.optim.Adam([
-    # If you are using non-roberta based models, change this to point to the right base
-    {'params': model.roberta.parameters(), 'lr': args.lr_base},
+    # If you are using non-bert based models, change this to point to the right base
+    {'params': model.bert.parameters(), 'lr': args.lr_base},
     {'params': model.classifier.parameters(), 'lr': args.lr_linear}
 ])
 scheduler = get_cosine_schedule_with_warmup(optimizer, 0, 20)
