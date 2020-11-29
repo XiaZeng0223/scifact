@@ -11,9 +11,9 @@ from typing import List
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--corpus', type=str, required=True)
-parser.add_argument('--claim-train', type=str, required=True)
-parser.add_argument('--claim-dev', type=str, required=True)
+parser.add_argument('--corpus', type=str, default='./data/corpus.jsonl')
+parser.add_argument('--claim-train', type=str, default='./data/claims_train.jsonl')
+parser.add_argument('--claim-dev', type=str, default='./data/claims_dev.jsonl')
 parser.add_argument('--dest', type=str, required=True, help='Folder to save the weights')
 parser.add_argument('--model', type=str, default='roberta-large')
 parser.add_argument('--epochs', type=int, default=20)
@@ -95,7 +95,14 @@ tokenizer = AutoTokenizer.from_pretrained(args.model)
 config = AutoConfig.from_pretrained(args.model, num_labels=3)
 model = AutoModelForSequenceClassification.from_pretrained(args.model, config=config).to(device)
 optimizer = torch.optim.Adam([
+<<<<<<< Updated upstream
     # If you are using non-bert based models, change this to point to the right base
+=======
+    # If you are using non-roberta based models, change this to point to the right base
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     {'params': model.bert.parameters(), 'lr': args.lr_base},
     {'params': model.classifier.parameters(), 'lr': args.lr_linear}
 ])
