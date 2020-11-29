@@ -95,14 +95,7 @@ tokenizer = AutoTokenizer.from_pretrained(args.model)
 config = AutoConfig.from_pretrained(args.model, num_labels=3)
 model = AutoModelForSequenceClassification.from_pretrained(args.model, config=config).to(device)
 optimizer = torch.optim.Adam([
-<<<<<<< Updated upstream
     # If you are using non-bert based models, change this to point to the right base
-=======
-    # If you are using non-roberta based models, change this to point to the right base
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     {'params': model.bert.parameters(), 'lr': args.lr_base},
     {'params': model.classifier.parameters(), 'lr': args.lr_linear}
 ])
