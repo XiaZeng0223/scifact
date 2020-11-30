@@ -16,11 +16,13 @@ parser.add_argument('--claim-train', type=str, default='./data/claims_train.json
 parser.add_argument('--claim-dev', type=str, default='./data/claims_dev.jsonl')
 parser.add_argument('--dest', type=str, required=True, help='Folder to save the weights')
 parser.add_argument('--model', type=str, default='roberta-large')
-parser.add_argument('--epochs', type=int, default=20)
+parser.add_argument('--epochs', type=int, default=2)
 parser.add_argument('--batch-size-gpu', type=int, default=8, help='The batch size to send through GPU')
 parser.add_argument('--batch-size-accumulated', type=int, default=256, help='The batch size for each gradient update')
 parser.add_argument('--lr-base', type=float, default=1e-5)
 parser.add_argument('--lr-linear', type=float, default=1e-4)
+parser.add_argument('--model_base', type=str, default='bert')
+
 args = parser.parse_args()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -91,14 +93,24 @@ class SciFactLabelPredictionDataset(Dataset):
 trainset = SciFactLabelPredictionDataset(args.corpus, args.claim_train)
 devset = SciFactLabelPredictionDataset(args.corpus, args.claim_dev)
 
+
+
+
 tokenizer = AutoTokenizer.from_pretrained(args.model)
 config = AutoConfig.from_pretrained(args.model, num_labels=3)
 model = AutoModelForSequenceClassification.from_pretrained(args.model, config=config).to(device)
-optimizer = torch.optim.Adam([
-    # If you are using non-bert based models, change this to point to the right base
-    {'params': model.bert.parameters(), 'lr': args.lr_base},
-    {'params': model.classifier.parameters(), 'lr': args.lr_linear}
-])
+# model base are either bert or roberta
+if args.model_base=='bert':
+    optimizer = torch.optim.Adam([
+        {'params': model.bert.parameters(), 'lr': args.lr_base},
+        {'params': model.classifier.parameters(), 'lr': args.lr_linear}
+    ])
+elif args.model_base=='roberta':
+    optimizer = torch.optim.Adam([
+        {'params': model.roberta.parameters(), 'lr': args.lr_base},
+        {'params': model.classifier.parameters(), 'lr': args.lr_linear}
+    ])
+
 scheduler = get_cosine_schedule_with_warmup(optimizer, 0, 20)
 
 
