@@ -72,5 +72,6 @@ with torch.no_grad():
                 results[doc_id] = {'label': LABELS[label_index], 'confidence': round(label_confidence, 4)}
         output.write({
             'claim_id': data['id'],
-            'labels': results
+            'labels': results,
+            'rationales':evidence
         })

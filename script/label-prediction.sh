@@ -10,24 +10,20 @@
 bert_variant=$1
 training_dataset=$2
 dataset=$3
+model_path=$4
+output_path=$5
+
+echo "${model_path}"
+
+echo "${output_path}"
 
 echo "Running pipeline on ${dataset} set."
 
 ####################
 
-# Download data.
-bash script/download-data.sh
-
-####################
-
-# Download models.
-bash script/download-model.sh label ${bert_variant} ${training_dataset}
-
-####################
-
 # Create a prediction folder to store results.
-rm -rf prediction
-mkdir -p prediction
+rm -rf "${output_path}"
+mkdir -p "${output_path}"
 
 ####################
 
@@ -36,7 +32,7 @@ echo; echo "Retrieving oracle abstracts."
 python3 verisci/inference/abstract_retrieval/oracle.py \
     --dataset data/claims_${dataset}.jsonl \
     --include-nei \
-    --output prediction/abstract_retrieval.jsonl
+    --output ${output_path}/abstract_retrieval.jsonl
 
 ####################
 
@@ -45,8 +41,8 @@ echo; echo "Selecting oracle rationales."
 python3 verisci/inference/rationale_selection/oracle_tfidf.py \
     --corpus data/corpus.jsonl \
     --dataset data/claims_${dataset}.jsonl \
-    --abstract-retrieval prediction/abstract_retrieval.jsonl \
-    --output prediction/rationale_selection.jsonl
+    --abstract-retrieval ${output_path}/abstract_retrieval.jsonl \
+    --output ${output_path}/rationale_selection.jsonl
 
 ####################
 
@@ -63,13 +59,13 @@ else
     mode="claim_and_rationale"
 fi
 
-python3 verisci/inference/label_prediction/transformer.py \
+python3 verisci/inference/label_prediction/two-step.py \
     --corpus data/corpus.jsonl \
     --dataset data/claims_${dataset}.jsonl \
-    --rationale-selection prediction/rationale_selection.jsonl \
-    --model model/label_${bert_variant}_${training_dataset} \
+    --rationale-selection ${output_path}/rationale_selection.jsonl \
+    --model ${model_path} \
     --mode ${mode} \
-    --output prediction/label_prediction.jsonl
+    --output ${output_path}/label_prediction_${bert_variant}.jsonl
 
 ####################
 
@@ -77,4 +73,8 @@ echo; echo "Evaluating."
 python3 verisci/evaluate/label_prediction.py \
     --corpus data/corpus.jsonl \
     --dataset data/claims_${dataset}.jsonl \
-    --label-prediction prediction/label_prediction.jsonl
+    --label-prediction ${output_path}/label_prediction_${bert_variant}.jsonl \
+    --output ${output_path}/wrong_preds_${bert_variant}.jsonl
+
+
+
